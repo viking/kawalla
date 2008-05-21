@@ -1,0 +1,4 @@
+*.o
+kflickr
+moc_*
+Makefile
