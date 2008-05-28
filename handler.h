@@ -2,19 +2,20 @@
 #define __HANDLER_H
 
 #include <qxml.h>
-#include <qgrid.h>
-#include <kapplication.h>
 #include <math.h>
+#include <kapplication.h>
+#include "window.h"
 
 class FlickrHandler : public QXmlDefaultHandler
 {
 public: 
-  FlickrHandler( QGrid *g ); 
+  FlickrHandler( MainWindow *w ); 
 
   bool startElement( const QString&, const QString&, const QString &, const QXmlAttributes & );
 
 private:
-  QGrid *grid;
+  MainWindow *window;
+  int count;
   int dwidth;
   int dheight;
   float dratio;

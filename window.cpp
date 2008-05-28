@@ -2,10 +2,8 @@
 
 MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 {
-  QPopupMenu *filemenu;
-  KMenuBar   *menu;
-  QGrid      *grid;
-  QVBox      *vbox;
+  QPopupMenu  *filemenu;
+  KMenuBar    *menu;
 
   setCaption("Flickr Wallpaper Grabber");
 
@@ -14,10 +12,14 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
   menu = menuBar();
   menu->insertItem( i18n( "&File" ), filemenu);
 
-  vbox = new QVBox(this);
-  grid = new QGrid(2, vbox);
-  setCentralWidget(vbox);
+  central = new QWidget(this);
+  grid    = new QGridLayout(central, 11, 3, 0, 5);
+  count   = 0;
 
+  goButton = new KPushButton( "Go!", central );
+  grid->addMultiCellWidget( goButton, 10, 10, 0, 2 ); 
+
+  setCentralWidget(central);
   grabPhotos();
 }
 
@@ -28,7 +30,7 @@ void MainWindow::grabPhotos()
   if( KIO::NetAccess::download( url, tmpFile, this ) )
   {
     QXmlSimpleReader reader;
-    FlickrHandler handler( grid );
+    FlickrHandler handler( this );
     QFile file( tmpFile );
     QXmlInputSource source( file );
 
@@ -39,4 +41,27 @@ void MainWindow::grabPhotos()
   } else {
     KMessageBox::error(this, KIO::NetAccess::lastErrorString() );
   }
+}
+
+void MainWindow::addFlickr( QString &thumbUrl, QString &photoUrl, QString &title, QString &id )
+{
+  QLabel  *label;
+  QString tmpFile;
+  KURL thumb( thumbUrl );
+  KURL photo( photoUrl );
+
+  grid->addWidget(new QCheckBox( central ), count, 0); 
+
+  KIO::NetAccess::download( thumb, tmpFile, this );
+  label = new QLabel( central );
+  label->setPixmap( QPixmap( tmpFile ) );
+  grid->addWidget(label, count, 1);
+  KIO::NetAccess::removeTempFile(tmpFile);
+
+  label = new QLabel( central );
+  label->setTextFormat(Qt::RichText);
+  label->setText( QString("<b>Title:</b> %1").arg(title) );
+  grid->addWidget(label, count, 2);
+
+  count++;
 }

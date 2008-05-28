@@ -9,10 +9,10 @@
 #include <kurl.h>
 #include <kmessagebox.h>
 #include <qvbox.h>
-#include <qgrid.h>
 #include <qlabel.h>
+#include <qlayout.h>
+#include <qcheckbox.h>
 #include <kio/netaccess.h>
-#include "handler.h"
 
 class MainWindow : public KMainWindow
 {
@@ -20,11 +20,16 @@ class MainWindow : public KMainWindow
 
 public:
   MainWindow( const char *name );
+  void addFlickr( QString &thumbUrl, QString &photoUrl, QString &title, QString &id ); 
 
 private:
   void grabPhotos();
-
-  QGrid *grid;
+  QWidget     *central;
+  QGridLayout *grid;
+  KPushButton *goButton;
+  int count;
 };
 
 #endif
+
+#include "handler.h"
