@@ -53,7 +53,7 @@ bool FlickrHandler::startElement( const QString &, const QString &, const QStrin
     }
 
     if (width >= dwidth && height >= dheight) {
-      ratio = (float)dwidth / (float)dheight;
+      ratio = (float)width / (float)height;
       if (ratio >= dfloor && ratio <= dceil) {
         // this is a good candidate
         QString thumbUrl( QString("http://farm%1.static.flickr.com/%2/%3_%4_s.jpg")
@@ -67,7 +67,7 @@ bool FlickrHandler::startElement( const QString &, const QString &, const QStrin
           .arg(id)
           .arg(osecret)
           .arg(ext) );
-        window->addFlickr( thumbUrl, photoUrl, title, id );
+        window->addFlickr( thumbUrl, photoUrl, title, id, width, height, ratio );
         count++;
       }
     }
