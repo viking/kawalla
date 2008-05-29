@@ -6,6 +6,7 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 //  KMenuBar    *menu;
 
   setCaption("Flickr Wallpaper Grabber");
+  setIcon( QPixmap( "flickr.png" ) );
 
 //  filemenu = new QPopupMenu;
 //  filemenu->insertItem( i18n( "&Quit" ), kapp, SLOT( quit() ) );
