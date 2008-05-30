@@ -9,20 +9,22 @@
 #include <kurl.h>
 #include <kmessagebox.h>
 #include <kwin.h>
+#include <kscrollview.h>
 #include <kio/netaccess.h>
 #include <dcopref.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qlineedit.h>
 #include <qptrlist.h> 
 #include <qdir.h>
 #include <qcstring.h>
+#include <qlistbox.h>
 #include <Magick++.h>
+#include "dbox.h"
 using namespace Magick;
 
 struct Photo {
   KURL *url;
-  QLineEdit *box;
+  DesktopBox *box;
   int width;
   int height;
   float ratio;
@@ -39,9 +41,11 @@ public:
 
 private slots:
   void go();
+  void updateBoxes(DesktopBox*, const QString&, const QString&);
 
 private:
   void grabPhotos();
+  KScrollView *sv;
   QWidget     *central;
   QGridLayout *grid;
   KPushButton *goButton;
@@ -51,6 +55,7 @@ private:
   int dwidth;
   int dheight;
   float dratio;
+  bool *selected;
 };
 
 #endif
