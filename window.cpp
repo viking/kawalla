@@ -25,11 +25,12 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 
   sv      = new KScrollView(this);
   central = new QWidget(sv->viewport());
-  grid    = new QGridLayout(central, 11, 3, 0, 0);
+  grid    = new QGridLayout(central, 11, 3, 0, 5);
   grid->setColSpacing(0, 10);
   grid->setColSpacing(1, 75);
   grid->setColSpacing(2, 215);
   sv->addChild(central);
+  sv->setResizePolicy(QScrollView::AutoOneFit);
 
   goButton = new KPushButton( "Go!", central );
   connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
@@ -78,6 +79,7 @@ void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString 
   KURL        thumbUrl( thumbUrlStr );
 
   dbox = new DesktopBox( desktops, central );
+  dbox->setMaximumSize(50, 25);
   connect(dbox, SIGNAL(desktopChanged(DesktopBox*, const QString&, const QString&)), 
       this, SLOT(updateBoxes(DesktopBox*, const QString&, const QString&)));
   grid->addWidget(dbox, count, 0); 
@@ -85,6 +87,7 @@ void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString 
   KIO::NetAccess::download( thumbUrl, tmpFile, this );
   label = new QLabel( central );
   label->setPixmap( QPixmap( tmpFile ) );
+  label->setMaximumSize(75, 75);
   grid->addWidget(label, count, 1);
   KIO::NetAccess::removeTempFile(tmpFile);
 

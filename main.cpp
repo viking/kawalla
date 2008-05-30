@@ -6,7 +6,7 @@ int main( int argc, char **argv )
   KApplication a( argc, argv, "kflickr" );
 
   MainWindow *window = new MainWindow( "Flickr Wallpaper Grabber" );
-  window->resize( 200, 600 );
+  window->resize( 400, 600 );
 
   a.setMainWidget( window );
   window->show();
