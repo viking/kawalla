@@ -13,6 +13,11 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 //  menu = menuBar();
 //  menu->insertItem( i18n( "&File" ), filemenu);
 
+  // global color scheme info
+  KConfig *cfg = KGlobal::config();
+  cfg->setGroup( "General" );
+  alternateBackground = cfg->readColorEntry( "alternateBackground" );
+
   // desktop info
   dwidth   = KApplication::desktop()->width();
   dheight  = KApplication::desktop()->height();
@@ -25,16 +30,13 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 
   sv      = new KScrollView(this);
   central = new QWidget(sv->viewport());
-  grid    = new QGridLayout(central, 11, 3, 0, 5);
-  grid->setColSpacing(0, 10);
-  grid->setColSpacing(1, 75);
-  grid->setColSpacing(2, 215);
+  grid    = new QGridLayout(central, 11, 1, 0, 5);
   sv->addChild(central);
   sv->setResizePolicy(QScrollView::AutoOneFit);
 
   goButton = new KPushButton( "Go!", central );
   connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
-  grid->addMultiCellWidget( goButton, 10, 10, 0, 2 ); 
+  grid->addWidget( goButton, 10, 0 ); 
 
   setCentralWidget(sv);
   grabPhotos();
@@ -72,30 +74,35 @@ void MainWindow::grabPhotos()
 
 void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString &pageUrlStr, QString &title, QString &id, int width, int height, float ratio )
 {
+  QHBox      *hbox;
   QLabel     *label;
   DesktopBox *dbox;
   Photo      *photo;
   QString     tmpFile;
   KURL        thumbUrl( thumbUrlStr );
 
-  dbox = new DesktopBox( desktops, central );
+  hbox = new QHBox( central );
+  hbox->setSpacing(5);
+  if (count % 2 == 1)
+    hbox->setPaletteBackgroundColor( alternateBackground );
+
+  dbox = new DesktopBox( desktops, hbox );
   dbox->setMaximumSize(50, 25);
   connect(dbox, SIGNAL(desktopChanged(DesktopBox*, const QString&, const QString&)), 
       this, SLOT(updateBoxes(DesktopBox*, const QString&, const QString&)));
-  grid->addWidget(dbox, count, 0); 
 
   KIO::NetAccess::download( thumbUrl, tmpFile, this );
-  label = new QLabel( central );
+  label = new QLabel( hbox );
   label->setPixmap( QPixmap( tmpFile ) );
   label->setMaximumSize(75, 75);
-  grid->addWidget(label, count, 1);
   KIO::NetAccess::removeTempFile(tmpFile);
 
-  label = new QLabel( central );
+  label = new QLabel( hbox );
   label->setText( title );
   label->setAlignment( Qt::AlignAuto | Qt::AlignTop | Qt::WordBreak );
   label->setMaximumWidth(200);
-  grid->addWidget(label, count, 2);
+
+  grid->addWidget(hbox, count, 0);
 
   // save photo information for later
   photo = new Photo;

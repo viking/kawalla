@@ -10,15 +10,17 @@
 #include <kmessagebox.h>
 #include <kwin.h>
 #include <kscrollview.h>
-#include <kactivelabel.h>
+#include <kconfig.h>
 #include <kio/netaccess.h>
 #include <dcopref.h>
 #include <qlabel.h>
 #include <qlayout.h>
+#include <qhbox.h>
 #include <qptrlist.h> 
 #include <qdir.h>
 #include <qcstring.h>
 #include <qlistbox.h>
+#include <qcolor.h>
 #include <Magick++.h>
 #include "dbox.h"
 using namespace Magick;
@@ -51,6 +53,7 @@ private:
   QGridLayout *grid;
   KPushButton *goButton;
   QPtrList<Photo> photos;
+  QColor alternateBackground;
   int count;
   int desktops;
   int dwidth;
