@@ -70,7 +70,7 @@ void MainWindow::grabPhotos()
   }
 }
 
-void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString &title, QString &id, int width, int height, float ratio )
+void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString &pageUrlStr, QString &title, QString &id, int width, int height, float ratio )
 {
   QLabel     *label;
   DesktopBox *dbox;
@@ -92,8 +92,9 @@ void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString 
   KIO::NetAccess::removeTempFile(tmpFile);
 
   label = new QLabel( central );
-  label->setTextFormat(Qt::RichText);
-  label->setText( QString("<b>Title:</b> %1").arg(title) );
+  label->setText( title );
+  label->setAlignment( Qt::AlignAuto | Qt::AlignTop | Qt::WordBreak );
+  label->setMaximumWidth(200);
   grid->addWidget(label, count, 2);
 
   // save photo information for later

@@ -10,6 +10,7 @@
 #include <kmessagebox.h>
 #include <kwin.h>
 #include <kscrollview.h>
+#include <kactivelabel.h>
 #include <kio/netaccess.h>
 #include <dcopref.h>
 #include <qlabel.h>
@@ -37,7 +38,7 @@ class MainWindow : public KMainWindow
 public:
   MainWindow( const char *name );
   ~MainWindow();
-  void addFlickr( QString &, QString &, QString &, QString &, int, int, float ); 
+  void addFlickr( QString &, QString &, QString &, QString &, QString &, int, int, float ); 
 
 private slots:
   void go();

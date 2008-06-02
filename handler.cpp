@@ -67,7 +67,10 @@ bool FlickrHandler::startElement( const QString &, const QString &, const QStrin
           .arg(id)
           .arg(osecret)
           .arg(ext) );
-        window->addFlickr( thumbUrl, photoUrl, title, id, width, height, ratio );
+        QString pageUrl( QString("http://www.flickr.com/photos/%1/%2")
+          .arg(owner)
+          .arg(id) );
+        window->addFlickr( thumbUrl, photoUrl, pageUrl, title, id, width, height, ratio );
         count++;
       }
     }
