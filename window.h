@@ -2,6 +2,7 @@
 #define __MAIN_WINDOW_H
 
 #include <kapplication.h>
+#include <kcmdlineargs.h>
 #include <kmainwindow.h>
 #include <kmenubar.h>
 #include <klocale.h>

@@ -23,12 +23,12 @@ PhotoRow::PhotoRow( QWidget *parent, int desktops ) :
 
 void PhotoRow::setPhoto( Photo *photo )
 {
-  QString tmpFile;
   this->photo = photo;
 
-  KIO::NetAccess::download( photo->thumbUrl, tmpFile, this );
-  thumb->setPixmap( QPixmap( tmpFile ) );
-  KIO::NetAccess::removeTempFile(tmpFile);
+  if (photo->thumbfn.isNull()) {
+    KIO::NetAccess::download( photo->thumbUrl, photo->thumbfn, this );
+  }
+  thumb->setPixmap( QPixmap( photo->thumbfn ) );
 
   title->setText( photo->title );
   combo->setCurrentItem( photo->desktop );

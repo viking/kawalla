@@ -6,7 +6,9 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
 //  KMenuBar    *menu;
 
   setCaption("Flickr Wallpaper Grabber");
-  setIcon( QPixmap( "flickr.png" ) );
+  setIcon( 
+    QPixmap( QString( "%1/flickr.png" ).arg( PWD ) ) 
+  );
 
 //  filemenu = new QPopupMenu;
 //  filemenu->insertItem( i18n( "&Quit" ), kapp, SLOT( quit() ) );
@@ -39,6 +41,7 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
   PhotoRow *row;
   for (int i = 0; i < 10; i++) {
     row = new PhotoRow( central, desktops );
+    row->hide();
     row->setSpacing(5);
     if (i % 2 == 1)
       row->setPaletteBackgroundColor( alternateBackground );
@@ -65,13 +68,14 @@ MainWindow::~MainWindow()
 {
   Photo *photo;
   for (photo = photos.first(); photo; photo = photos.next()) {
+    KIO::NetAccess::removeTempFile(photo->thumbfn);
     delete photo;
   }
 }
 
 void MainWindow::grabPhotos()
 {
-  KURL url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=250" );
+  KURL url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=200" );
   QString tmpFile;
   if( KIO::NetAccess::download( url, tmpFile, this ) )
   {
@@ -100,6 +104,7 @@ void MainWindow::addPhoto( QString &thumbUrlStr, QString &photoUrlStr, QString &
   photo->thumbUrl = KURL( thumbUrlStr );
   photo->pageUrl  = KURL( pageUrlStr );
   photo->title    = QString( title );
+  photo->thumbfn  = QString::null;
   photo->width    = width;
   photo->height   = height;
   photo->ratio    = ratio;
@@ -109,6 +114,7 @@ void MainWindow::addPhoto( QString &thumbUrlStr, QString &photoUrlStr, QString &
   if (count < 10) {
     row = rows.at(count);
     row->setPhoto(photo);
+    row->show();
   }
 
   count++;

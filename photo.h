@@ -9,6 +9,7 @@ struct Photo {
   KURL thumbUrl;
   KURL pageUrl;
   QString title;
+  QString thumbfn;
   int width;
   int height;
   float ratio;
