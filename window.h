@@ -16,22 +16,20 @@
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qhbox.h>
+#include <qvbox.h>
 #include <qptrlist.h> 
 #include <qdir.h>
 #include <qcstring.h>
 #include <qlistbox.h>
 #include <qcolor.h>
+#include <qcombobox.h>
 #include <Magick++.h>
-#include "dbox.h"
+#include "photo.h"
+#include "row.h"
+#include "handler.h"
 using namespace Magick;
 
-struct Photo {
-  KURL *url;
-  DesktopBox *box;
-  int width;
-  int height;
-  float ratio;
-};
+class PhotoRow;
 
 class MainWindow : public KMainWindow
 {
@@ -40,28 +38,33 @@ class MainWindow : public KMainWindow
 public:
   MainWindow( const char *name );
   ~MainWindow();
-  void addFlickr( QString &, QString &, QString &, QString &, QString &, int, int, float ); 
+  void addPhoto( QString &, QString &, QString &, QString &, QString &, int, int, float ); 
 
 private slots:
   void go();
-  void updateBoxes(DesktopBox*, const QString&, const QString&);
+  void next();
+  void back();
 
 private:
   void grabPhotos();
+  void switchPage();
+
   KScrollView *sv;
   QWidget     *central;
   QGridLayout *grid;
+  QVBox       *vbox;
   KPushButton *goButton;
+  KPushButton *nextButton;
+  KPushButton *backButton;
   QPtrList<Photo> photos;
+  QPtrList<PhotoRow> rows;
   QColor alternateBackground;
   int count;
   int desktops;
   int dwidth;
   int dheight;
+  int page;
   float dratio;
-  bool *selected;
 };
 
 #endif
-
-#include "handler.h"

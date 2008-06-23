@@ -6,6 +6,8 @@
 #include <kapplication.h>
 #include "window.h"
 
+class MainWindow;
+
 class FlickrHandler : public QXmlDefaultHandler
 {
 public: 

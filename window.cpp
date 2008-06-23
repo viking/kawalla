@@ -23,22 +23,41 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
   dheight  = KApplication::desktop()->height();
   dratio   = (float)dwidth / (float)dheight;
   desktops = KWin::numberOfDesktops();
-  count    = 0;
-  selected = new bool[desktops+1];
-  for (int i = 0; i <= desktops; i++)
-    selected[i] = false;
 
-  sv      = new KScrollView(this);
+  // layout
+  vbox    = new QVBox(this);
+  sv      = new KScrollView(vbox);
   central = new QWidget(sv->viewport());
-  grid    = new QGridLayout(central, 11, 1, 0, 5);
+  grid    = new QGridLayout(central, 10, 1, 0, 5);
+  vbox->setSpacing(5);
   sv->addChild(central);
   sv->setResizePolicy(QScrollView::AutoOneFit);
+  count = 0;
+  page  = 0;
 
-  goButton = new KPushButton( "Go!", central );
-  connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
-  grid->addWidget( goButton, 10, 0 ); 
+  // setup photo rows
+  PhotoRow *row;
+  for (int i = 0; i < 10; i++) {
+    row = new PhotoRow( central, desktops );
+    row->setSpacing(5);
+    if (i % 2 == 1)
+      row->setPaletteBackgroundColor( alternateBackground );
 
-  setCentralWidget(sv);
+    grid->addWidget(row, i, 0);
+    rows.append(row);
+  }
+
+  // button setup
+  QHBox *box = new QHBox( vbox );
+  backButton = new KPushButton( "Back", box );
+  goButton   = new KPushButton( "Go!",  box );
+  nextButton = new KPushButton( "Next", box );
+  connect(backButton, SIGNAL(clicked()), this, SLOT(back()));
+  connect(goButton,   SIGNAL(clicked()), this, SLOT(go()));
+  connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
+  backButton->setEnabled(false);
+
+  setCentralWidget(vbox);
   grabPhotos();
 }
 
@@ -46,15 +65,13 @@ MainWindow::~MainWindow()
 {
   Photo *photo;
   for (photo = photos.first(); photo; photo = photos.next()) {
-    delete photo->url;
     delete photo;
   }
-  delete [] selected;
 }
 
 void MainWindow::grabPhotos()
 {
-  KURL url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=100" );
+  KURL url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=250" );
   QString tmpFile;
   if( KIO::NetAccess::download( url, tmpFile, this ) )
   {
@@ -72,46 +89,27 @@ void MainWindow::grabPhotos()
   }
 }
 
-void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString &pageUrlStr, QString &title, QString &id, int width, int height, float ratio )
+void MainWindow::addPhoto( QString &thumbUrlStr, QString &photoUrlStr, QString &pageUrlStr, QString &title, QString &, int width, int height, float ratio )
 {
-  QHBox      *hbox;
-  QLabel     *label;
-  DesktopBox *dbox;
-  Photo      *photo;
-  QString     tmpFile;
-  KURL        thumbUrl( thumbUrlStr );
-
-  hbox = new QHBox( central );
-  hbox->setSpacing(5);
-  if (count % 2 == 1)
-    hbox->setPaletteBackgroundColor( alternateBackground );
-
-  dbox = new DesktopBox( desktops, hbox );
-  dbox->setMaximumSize(50, 25);
-  connect(dbox, SIGNAL(desktopChanged(DesktopBox*, const QString&, const QString&)), 
-      this, SLOT(updateBoxes(DesktopBox*, const QString&, const QString&)));
-
-  KIO::NetAccess::download( thumbUrl, tmpFile, this );
-  label = new QLabel( hbox );
-  label->setPixmap( QPixmap( tmpFile ) );
-  label->setMaximumSize(75, 75);
-  KIO::NetAccess::removeTempFile(tmpFile);
-
-  label = new QLabel( hbox );
-  label->setText( title );
-  label->setAlignment( Qt::AlignAuto | Qt::AlignTop | Qt::WordBreak );
-  label->setMaximumWidth(200);
-
-  grid->addWidget(hbox, count, 0);
+  Photo    *photo;
+  PhotoRow *row;
 
   // save photo information for later
   photo = new Photo;
-  photo->url    = new KURL( photoUrlStr );
-  photo->box    = dbox;
-  photo->width  = width;
-  photo->height = height;
-  photo->ratio  = ratio;
+  photo->url      = KURL( photoUrlStr );
+  photo->thumbUrl = KURL( thumbUrlStr );
+  photo->pageUrl  = KURL( pageUrlStr );
+  photo->title    = QString( title );
+  photo->width    = width;
+  photo->height   = height;
+  photo->ratio    = ratio;
+  photo->desktop  = 0;
   photos.append( photo );
+
+  if (count < 10) {
+    row = rows.at(count);
+    row->setPhoto(photo);
+  }
 
   count++;
 }
@@ -119,8 +117,6 @@ void MainWindow::addFlickr( QString &thumbUrlStr, QString &photoUrlStr, QString 
 void MainWindow::go() {
   Photo  *photo;
   Image   img;
-  QString ctext;
-  bool    ok;
   int     num, diff, offset;
   QDir    dir = QDir::home();
   DCOPRef desktop;
@@ -132,20 +128,16 @@ void MainWindow::go() {
   dir.cd( "flickr" );
 
   for (photo = photos.first(); photo; photo = photos.next()) {
-    ctext = photo->box->currentText();
-    if (ctext.isEmpty())
-      continue;
-
-    num = ctext.toInt(&ok);
-    if (!ok || num < 1 || num > desktops)
+    num = photo->desktop; 
+    if (num == 0)
       continue;
 
     qDebug("width: %d; height: %d; ratio: %f", photo->width, photo->height, photo->ratio);
 
-    KURL destUrl( QString("file://%1/%2").arg(dir.absPath()).arg(photo->url->fileName()) );
+    KURL destUrl( QString("file://%1/%2").arg(dir.absPath()).arg(photo->url.fileName()) );
     qDebug( destUrl.url() );
-    qDebug( photo->url->url() );
-    if (KIO::NetAccess::file_copy(*(photo->url), destUrl, -1, false)) {
+    qDebug( photo->url.url() );
+    if (KIO::NetAccess::file_copy(photo->url, destUrl, -1, false)) {
       img.read(destUrl.path());    
       
       if (photo->ratio < dratio) {
@@ -170,49 +162,37 @@ void MainWindow::go() {
   }
 }
 
-void MainWindow::updateBoxes(DesktopBox *sender, const QString &last, const QString &current) {
-  Photo        *photo;
-  DesktopBox   *box;
-  QListBox     *lb;
-  QListBoxItem *item;
-  int           current_d, last_d, tmp_d, i_pos, r_pos;
+void MainWindow::next() {
+  page++;
+  switchPage();
+}
 
-  current_d = current.isEmpty() ? 0 : current.toInt();
-  last_d    = last.isEmpty()    ? 0 : last.toInt();
-  for (photo = photos.first(); photo; photo = photos.next()) {
-    box = photo->box;
-    if (box == sender)
-      continue;
+void MainWindow::back() {
+  page--;
+  switchPage();
+}
 
-    // figure out where to add/remove items
-    lb    = box->listBox();
-    i_pos = r_pos = -1;
-    for (int i = (int)lb->count()-1; i >= 0; i--) {
-      item  = lb->item(i);
-      tmp_d = item->text().isEmpty() ? 0 : item->text().toInt();
+void MainWindow::switchPage()
+{
+  PhotoRow *row;
+  Photo    *photo;
+  int count, index;
 
-      if (last_d && i_pos < 0 && tmp_d < last_d)
-        i_pos = i+1;
-      if (current_d && r_pos < 0 && tmp_d == current_d)
-        r_pos = i;
+  count = photos.count();
+  index = page * 10;
+
+  for (int i = 0; i < 10; i++, index++) {
+    row = rows.at(i);
+    if (index < count) {
+      photo = photos.at(index);
+      row->setPhoto(photo);
+      row->show();
     }
-
-    // delete item that is now selected and add back the one that was de-selected
-    if (r_pos > 0) {
-      box->removeItem(r_pos);
-      if (i_pos > r_pos)
-        i_pos--;
-    }
-
-    if (i_pos > 0) {
-      box->insertItem(last, i_pos);
-      if (i_pos == box->currentItem())
-        box->setCurrentItem(i_pos+1);
+    else {
+      row->hide();
     }
   }
 
-  if (!last.isEmpty())
-    selected[last.toInt()] = false;
-  if (!current.isEmpty())
-    selected[current.toInt()] = true;
+  backButton->setEnabled(page > 0);
+  nextButton->setEnabled(index < count);
 }

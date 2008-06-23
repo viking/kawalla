@@ -9,7 +9,6 @@ FlickrHandler::FlickrHandler( MainWindow *w ) :
   dratio  = (float)dwidth / (float)dheight;
   dfloor  = floorf(dratio);
   dceil   = ceilf(dratio);
-  count   = 0;
 }
 
 bool FlickrHandler::startElement( const QString &, const QString &, const QString &name, const QXmlAttributes &attrs )
@@ -19,7 +18,7 @@ bool FlickrHandler::startElement( const QString &, const QString &, const QStrin
   float ratio;
   width = height = ratio = 0;
 
-  if (name == "photo" && count < 10) {
+  if (name == "photo") {
     for (int i = 0; i < attrs.count(); i++) {
       if (attrs.localName(i) == "farm")
         farm = attrs.value(i);
@@ -70,8 +69,7 @@ bool FlickrHandler::startElement( const QString &, const QString &, const QStrin
         QString pageUrl( QString("http://www.flickr.com/photos/%1/%2")
           .arg(owner)
           .arg(id) );
-        window->addFlickr( thumbUrl, photoUrl, pageUrl, title, id, width, height, ratio );
-        count++;
+        window->addPhoto( thumbUrl, photoUrl, pageUrl, title, id, width, height, ratio );
       }
     }
   }
