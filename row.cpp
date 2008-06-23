@@ -13,12 +13,14 @@ PhotoRow::PhotoRow( QWidget *parent, int desktops ) :
   combo->setMaximumSize(50, 25);
   connect(combo, SIGNAL( activated(int) ), this, SLOT( setDesktop(int) ));
 
-  thumb = new QLabel( this );
+  thumb = new KPushButton( this );
   thumb->setMaximumSize(75, 75);
+  thumb->setFlat(true);
+  connect(thumb, SIGNAL( clicked() ), this, SLOT( runBrowser() ));
 
   title = new QLabel( this );
   title->setAlignment( Qt::AlignAuto | Qt::AlignTop | Qt::WordBreak );
-  title->setMaximumWidth(200);
+  title->setMaximumWidth(200); 
 }
 
 void PhotoRow::setPhoto( Photo *photo )
@@ -37,4 +39,9 @@ void PhotoRow::setPhoto( Photo *photo )
 void PhotoRow::setDesktop( int index )
 {
   photo->desktop = index;
+}
+
+void PhotoRow::runBrowser()
+{
+  new KRun( photo->pageUrl );
 }
