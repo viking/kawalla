@@ -5,9 +5,9 @@
 #include <qstring.h>
 
 struct Photo {
-  KURL url;
-  KURL thumbUrl;
-  KURL pageUrl;
+  KUrl url;
+  KUrl thumbUrl;
+  KUrl pageUrl;
   QString title;
   QString thumbfn;
   int width;

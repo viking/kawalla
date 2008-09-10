@@ -1,8 +1,8 @@
 TEMPLATE = app
 CONFIG += qt debug
-INCLUDEPATH += . /usr/include/kde
-LIBS += -L/usr/lib/kde3 -lkdeui -lkio -lm `Magick++-config --libs`
-DEFINES += PWD="\"$$(PWD)\""
+INCLUDEPATH += . /usr/lib/kde4/include
+LIBS += -L/usr/lib/kde4/lib -lkdeui -lkio -lm `Magick++-config --libs`
+DEFINES += PWD="'\"$$(PWD)\"'"
 
 HEADERS += window.h
 HEADERS += handler.h
@@ -12,3 +12,5 @@ SOURCES += window.cpp
 SOURCES += handler.cpp
 SOURCES += row.cpp
 SOURCES += main.cpp
+#The following line was inserted by qt3to4
+QT += xml qt3support

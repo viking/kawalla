@@ -1,39 +1,27 @@
 #include "window.h"
 
-MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
+MainWindow::MainWindow () : KMainWindow ()
 {
-//  QPopupMenu  *filemenu;
-//  KMenuBar    *menu;
-
   setCaption("Flickr Wallpaper Grabber");
-  setIcon( 
-    QPixmap( QString( "%1/flickr.png" ).arg( PWD ) ) 
+  setIcon(
+    QPixmap( QString( "%1/flickr.png" ).arg( PWD ) )
   );
 
-//  filemenu = new QPopupMenu;
-//  filemenu->insertItem( i18n( "&Quit" ), kapp, SLOT( quit() ) );
-//  menu = menuBar();
-//  menu->insertItem( i18n( "&File" ), filemenu);
-
-  // global color scheme info
-  KConfig *cfg = KGlobal::config();
-  cfg->setGroup( "General" );
-  alternateBackground = cfg->readColorEntry( "alternateBackground" );
-
   // desktop info
-  dwidth   = KApplication::desktop()->width();
-  dheight  = KApplication::desktop()->height();
+  QRect geometry = KApplication::desktop()->screenGeometry();
+  dwidth   = geometry.width();
+  dheight  = geometry.height();
   dratio   = (float)dwidth / (float)dheight;
-  desktops = KWin::numberOfDesktops();
+  desktops = KWindowSystem::numberOfDesktops();
 
   // layout
-  vbox    = new QVBox(this);
-  sv      = new KScrollView(vbox);
+  vbox    = new Q3VBox(this);
+  sv      = new Q3ScrollView(vbox);
   central = new QWidget(sv->viewport());
-  grid    = new QGridLayout(central, 10, 1, 0, 5);
+  grid    = new Q3GridLayout(central, 10, 1, 0, 5);
   vbox->setSpacing(5);
   sv->addChild(central);
-  sv->setResizePolicy(QScrollView::AutoOneFit);
+  sv->setResizePolicy(Q3ScrollView::AutoOneFit);
   count = 0;
   page  = 0;
 
@@ -43,15 +31,13 @@ MainWindow::MainWindow ( const char * name ) : KMainWindow ( 0L, name )
     row = new PhotoRow( central, desktops );
     row->hide();
     row->setSpacing(5);
-    if (i % 2 == 1)
-      row->setPaletteBackgroundColor( alternateBackground );
 
     grid->addWidget(row, i, 0);
     rows.append(row);
   }
 
   // button setup
-  QHBox *box = new QHBox( vbox );
+  Q3HBox *box = new Q3HBox( vbox );
   backButton = new KPushButton( "Back", box );
   goButton   = new KPushButton( "Go!",  box );
   nextButton = new KPushButton( "Next", box );
@@ -75,7 +61,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::grabPhotos()
 {
-  KURL url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=200" );
+  KUrl url( "http://api.flickr.com/services/rest/?api_key=6efcde4b429a5569196d2a99a2669097&method=flickr.interestingness.getList&extras=o_dims,original_format,original_secret&per_page=200" );
   QString tmpFile;
   if( KIO::NetAccess::download( url, tmpFile, this ) )
   {
@@ -100,9 +86,9 @@ void MainWindow::addPhoto( QString &thumbUrlStr, QString &photoUrlStr, QString &
 
   // save photo information for later
   photo = new Photo;
-  photo->url      = KURL( photoUrlStr );
-  photo->thumbUrl = KURL( thumbUrlStr );
-  photo->pageUrl  = KURL( pageUrlStr );
+  photo->url      = KUrl( photoUrlStr );
+  photo->thumbUrl = KUrl( thumbUrlStr );
+  photo->pageUrl  = KUrl( pageUrlStr );
   photo->title    = QString( title );
   photo->thumbfn  = QString::null;
   photo->width    = width;
@@ -125,27 +111,27 @@ void MainWindow::go() {
   Image   img;
   int     num, diff, offset;
   QDir    dir = QDir::home();
-  DCOPRef desktop;
 
-  desktop.setRef( "kdesktop", "KBackgroundIface" );   // turns out DCOP is the easiest way
-  dir.cd( "images" );
-  if (!dir.exists("flickr"))
-    dir.mkdir("flickr");
-  dir.cd( "flickr" );
+  dir.cd( "Pictures" );
+  if (!dir.exists("kawalla"))
+    dir.mkdir("kawalla");
+  dir.cd( "kawalla" );
 
   for (photo = photos.first(); photo; photo = photos.next()) {
-    num = photo->desktop; 
+    num = photo->desktop;
     if (num == 0)
       continue;
 
     qDebug("width: %d; height: %d; ratio: %f", photo->width, photo->height, photo->ratio);
 
-    KURL destUrl( QString("file://%1/%2").arg(dir.absPath()).arg(photo->url.fileName()) );
+    KUrl destUrl( QString("file://%1/%2").arg(dir.absPath()).arg(photo->url.fileName()) );
     qDebug( destUrl.url() );
     qDebug( photo->url.url() );
-    if (KIO::NetAccess::file_copy(photo->url, destUrl, -1, false)) {
-      img.read(destUrl.path());    
-      
+    if (KIO::NetAccess::file_copy(photo->url, destUrl, this)) {
+      QByteArray tmpArray = destUrl.path().toAscii();
+      char * destPath = tmpArray.data();
+      img.read(destPath);
+
       if (photo->ratio < dratio) {
         // height needs to be changed
         diff   = (int)roundf(photo->height - (photo->width / dratio));
@@ -162,9 +148,9 @@ void MainWindow::go() {
       }
 
       img.scale(Geometry(dwidth, dheight));
-      img.write(destUrl.path());
+      qDebug( QString( "width: %1, height: %2" ).arg(img.size().width()).arg(img.size().height()) );
+      img.write(destPath);
     }
-    desktop.call( "setWallpaper", num, destUrl.path(), 1 );
   }
 }
 

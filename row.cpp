@@ -1,8 +1,12 @@
 #include "row.h"
+//Added by qt3to4:
+#include <QPixmap>
+#include <QLabel>
 
 PhotoRow::PhotoRow( QWidget *parent, int desktops ) :
-  QHBox( parent )
+  Q3HBox( parent )
 {
+  parent = parent;
   desktops = desktops;
 
   combo = new QComboBox( this );
@@ -20,7 +24,7 @@ PhotoRow::PhotoRow( QWidget *parent, int desktops ) :
 
   title = new QLabel( this );
   title->setAlignment( Qt::AlignAuto | Qt::AlignTop | Qt::WordBreak );
-  title->setMaximumWidth(200); 
+  title->setMaximumWidth(200);
 }
 
 void PhotoRow::setPhoto( Photo *photo )
@@ -43,5 +47,5 @@ void PhotoRow::setDesktop( int index )
 
 void PhotoRow::runBrowser()
 {
-  new KRun( photo->pageUrl );
+  KRun::runUrl( photo->pageUrl, "text/html", parent->parentWidget()->parentWidget() );
 }

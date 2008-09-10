@@ -9,21 +9,23 @@
 #include <kpushbutton.h>
 #include <kurl.h>
 #include <kmessagebox.h>
-#include <kwin.h>
-#include <kscrollview.h>
+#include <kwindowsystem.h>
+#include <q3scrollview.h>
 #include <kconfig.h>
 #include <kio/netaccess.h>
-#include <dcopref.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qhbox.h>
-#include <qvbox.h>
-#include <qptrlist.h> 
+#include <q3hbox.h>
+#include <q3vbox.h>
+#include <q3ptrlist.h>
 #include <qdir.h>
-#include <qcstring.h>
-#include <qlistbox.h>
+#include <q3cstring.h>
+#include <q3listbox.h>
 #include <qcolor.h>
 #include <qcombobox.h>
+#include <Q3GridLayout>
+#include <QPixmap>
+#include <QDesktopWidget>
 #include <Magick++.h>
 #include "photo.h"
 #include "row.h"
@@ -37,9 +39,9 @@ class MainWindow : public KMainWindow
   Q_OBJECT
 
 public:
-  MainWindow( const char *name );
+  MainWindow();
   ~MainWindow();
-  void addPhoto( QString &, QString &, QString &, QString &, QString &, int, int, float ); 
+  void addPhoto( QString &, QString &, QString &, QString &, QString &, int, int, float );
 
 private slots:
   void go();
@@ -50,15 +52,15 @@ private:
   void grabPhotos();
   void switchPage();
 
-  KScrollView *sv;
+  Q3ScrollView *sv;
   QWidget     *central;
-  QGridLayout *grid;
-  QVBox       *vbox;
+  Q3GridLayout *grid;
+  Q3VBox       *vbox;
   KPushButton *goButton;
   KPushButton *nextButton;
   KPushButton *backButton;
-  QPtrList<Photo> photos;
-  QPtrList<PhotoRow> rows;
+  Q3PtrList<Photo> photos;
+  Q3PtrList<PhotoRow> rows;
   QColor alternateBackground;
   int count;
   int desktops;

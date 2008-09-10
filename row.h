@@ -1,7 +1,7 @@
 #ifndef __ROW_H
 #define __ROW_H
 
-#include <qhbox.h>
+#include <q3hbox.h>
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <qpixmap.h>
@@ -11,7 +11,7 @@
 #include "photo.h"
 #include "window.h"
 
-class PhotoRow : public QHBox
+class PhotoRow : public Q3HBox
 {
   Q_OBJECT
 
@@ -28,6 +28,9 @@ public:
 private slots:
   void setDesktop( int index );
   void runBrowser();
+
+private:
+  QWidget *parent;
 };
 
 #endif
