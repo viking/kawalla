@@ -1,11 +1,13 @@
 #include "window.h"
 
-MainWindow::MainWindow () : KMainWindow ()
+MainWindow::MainWindow () : QWidget ()
 {
   setCaption("Flickr Wallpaper Grabber");
   setIcon(
     QPixmap( QString( "%1/flickr.png" ).arg( PWD ) )
   );
+  count = 0;
+  page  = 0;
 
   // desktop info
   QRect geometry = KApplication::desktop()->screenGeometry();
@@ -15,46 +17,53 @@ MainWindow::MainWindow () : KMainWindow ()
   desktops = KWindowSystem::numberOfDesktops();
 
   // layout
-  vbox    = new Q3VBox(this);
-  sv      = new Q3ScrollView(vbox);
-  central = new QWidget(sv->viewport());
-  grid    = new Q3GridLayout(central, 10, 1, 0, 5);
-  vbox->setSpacing(5);
-  sv->addChild(central);
-  sv->setResizePolicy(Q3ScrollView::AutoOneFit);
-  count = 0;
-  page  = 0;
+  layout = new QVBoxLayout;
+  layout->setSpacing(5);
+
+  // box where photo rows live
+  scroll  = new QScrollArea(this);
+  row_box = new PhotoRowBox(scroll);
+  scroll->setWidgetResizable(true);
+  scroll->setWidget(row_box);
+  layout->addWidget(scroll);
+
+  // button setup
+  bbox       = new QWidget;
+  blayout    = new QHBoxLayout;
+  backButton = new KPushButton( "Back" );
+  goButton   = new KPushButton( "Go!" );
+  nextButton = new KPushButton( "Next" );
+  backButton->setEnabled(false);
+  connect(backButton, SIGNAL(clicked()), this, SLOT(back()));
+  connect(goButton,   SIGNAL(clicked()), this, SLOT(go()));
+  connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
+  blayout->addWidget(backButton);
+  blayout->addWidget(goButton);
+  blayout->addWidget(nextButton);
+  bbox->setLayout(blayout);
+  layout->addWidget(bbox);
 
   // setup photo rows
   PhotoRow *row;
   for (int i = 0; i < 10; i++) {
-    row = new PhotoRow( central, desktops );
+    row = new PhotoRow( row_box, desktops );
     row->hide();
-    row->setSpacing(5);
 
-    grid->addWidget(row, i, 0);
+    row_box->addRow(row);
     rows.append(row);
   }
 
-  // button setup
-  Q3HBox *box = new Q3HBox( vbox );
-  backButton = new KPushButton( "Back", box );
-  goButton   = new KPushButton( "Go!",  box );
-  nextButton = new KPushButton( "Next", box );
-  connect(backButton, SIGNAL(clicked()), this, SLOT(back()));
-  connect(goButton,   SIGNAL(clicked()), this, SLOT(go()));
-  connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
-  backButton->setEnabled(false);
-
-  setCentralWidget(vbox);
   grabPhotos();
+  row_box->show();
+  setLayout(layout);
+  show();
 }
 
 MainWindow::~MainWindow()
 {
   Photo *photo;
   for (photo = photos.first(); photo; photo = photos.next()) {
-    KIO::NetAccess::removeTempFile(photo->thumbfn);
+    photo->thumbFile.remove();
     delete photo;
   }
 }
@@ -90,7 +99,6 @@ void MainWindow::addPhoto( QString &thumbUrlStr, QString &photoUrlStr, QString &
   photo->thumbUrl = KUrl( thumbUrlStr );
   photo->pageUrl  = KUrl( pageUrlStr );
   photo->title    = QString( title );
-  photo->thumbfn  = QString::null;
   photo->width    = width;
   photo->height   = height;
   photo->ratio    = ratio;
@@ -187,4 +195,5 @@ void MainWindow::switchPage()
 
   backButton->setEnabled(page > 0);
   nextButton->setEnabled(index < count);
+  scroll->verticalScrollBar()->setValue(0);
 }

@@ -10,7 +10,8 @@
 #include <kurl.h>
 #include <kmessagebox.h>
 #include <kwindowsystem.h>
-#include <q3scrollview.h>
+#include <qscrollarea.h>
+#include <QVBoxLayout>
 #include <kconfig.h>
 #include <kio/netaccess.h>
 #include <qlabel.h>
@@ -23,18 +24,18 @@
 #include <q3listbox.h>
 #include <qcolor.h>
 #include <qcombobox.h>
-#include <Q3GridLayout>
-#include <QPixmap>
-#include <QDesktopWidget>
+#include <q3gridlayout.h>
+#include <qpixmap.h>
+#include <qdesktopwidget.h>
 #include <Magick++.h>
-#include "photo.h"
-#include "row.h"
-#include "handler.h"
 using namespace Magick;
 
-class PhotoRow;
+#include "handler.h"
+#include "photo.h"
+#include "row.h"
+#include "row_box.h"
 
-class MainWindow : public KMainWindow
+class MainWindow : public QWidget
 {
   Q_OBJECT
 
@@ -52,16 +53,16 @@ private:
   void grabPhotos();
   void switchPage();
 
-  Q3ScrollView *sv;
-  QWidget     *central;
-  Q3GridLayout *grid;
-  Q3VBox       *vbox;
+  PhotoRowBox *row_box;
+  QVBoxLayout *layout;
+  QWidget     *bbox;
+  QHBoxLayout *blayout;
+  QScrollArea *scroll;
   KPushButton *goButton;
   KPushButton *nextButton;
   KPushButton *backButton;
   Q3PtrList<Photo> photos;
   Q3PtrList<PhotoRow> rows;
-  QColor alternateBackground;
   int count;
   int desktops;
   int dwidth;

@@ -3,13 +3,15 @@
 
 #include <kurl.h>
 #include <qstring.h>
+#include <QFile>
 
 struct Photo {
   KUrl url;
   KUrl thumbUrl;
   KUrl pageUrl;
   QString title;
-  QString thumbfn;
+  QFile thumbFile;
+
   int width;
   int height;
   float ratio;

@@ -5,13 +5,15 @@
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <qpixmap.h>
+#include <QHBoxLayout>
+#include <QFileInfo>
 #include <kpushbutton.h>
 #include <krun.h>
-#include <kio/netaccess.h>
+#include <kstandarddirs.h>
+#include <kio/job.h>
 #include "photo.h"
-#include "window.h"
 
-class PhotoRow : public Q3HBox
+class PhotoRow : public QWidget
 {
   Q_OBJECT
 
@@ -28,9 +30,10 @@ public:
 private slots:
   void setDesktop( int index );
   void runBrowser();
+  void dataRecv( KIO::Job *job, const QByteArray &data );
 
 private:
-  QWidget *parent;
+  QHBoxLayout *layout;
 };
 
 #endif
