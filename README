@@ -1,2 +1,11 @@
-kawalla is a KDE application to automatically grab interesting photos from Flickr
-and set them as desktop wallpaper.
+Kawalla is a KDE application to automatically grab interesting photos from
+Flickr and set them as desktop wallpaper.
+
+Installation
+============
+
+You'll need kde-devel and libmagick++9-dev.  Once you have those, run:
+  qmake
+  make
+
+Enjoy.
